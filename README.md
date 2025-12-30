@@ -8,6 +8,7 @@ AI-powered image renaming script that generates descriptive filenames for screen
 - Extracts text from images via OCR to improve rename accuracy
 - Uses Claude AI to analyze both the image and extracted text
 - Generates clean, descriptive filenames (max 64 characters, lowercase with underscores)
+- Handles naming conflicts by automatically appending numeric suffixes (`_1`, `_2`, etc.)
 
 ## Requirements
 
@@ -41,7 +42,7 @@ make
 1. Sanitizes macOS screenshot filenames that contain narrow no-break space characters (U+202F)
 2. Generates OCR text extraction from the image (or uses existing `.ocr.txt` file if present)
 3. Sends both the OCR content and image to Claude for analysis
-4. Claude renames the file to a descriptive format using `mv`
+4. Claude analyzes the image, checks for naming conflicts, and renames the file to a descriptive format using `mv`
 
 ## Acknowledgements
 
