@@ -106,22 +106,42 @@ build_rename_prompt() {
 
     local input_file="$1"
     local ocr_content="$2"
+    local dir
+    dir=$(dirname "${input_file}")
 
     cat <<EOF
 Rename the file '${input_file}' to a descriptive lowercase filename.
-Rules:
-- Max 64 characters, max 10 words
-- Only lowercase letters, numbers, and underscores
-- Format: main_thing_sub_thing_detail
+
+NAMING RULES:
+- Maximum 64 characters total, maximum 10 words
+- Only lowercase letters, numbers, and underscores (no spaces or hyphens)
+- Format: main_thing_sub_thing_detail.ext
 - Preserve the original file extension
-- Do not overwrite or try to rename a file if the target file name already exists.
 
 OCR text from the image:
 ${ocr_content}
 
-Use mv to rename the file, then echo the new filename.
-IMPORTANT: YOU MUST ACTUALLY RENAME THE FILE WITH THE ALLOWED TOOLS.
-CRITICAL: If the target file name already exists, do not overwrite. Instead append a "_1", "_2", "_3", etc. at the end of the base file name.
+COLLISION DETECTION - MANDATORY STEPS:
+1. First, determine your ideal descriptive base name (e.g., "tide" for tide.png)
+2. BEFORE renaming, you MUST check if the target file already exists using: test -e "<target_path>"
+3. If the file exists (exit code 0), you MUST increment the suffix:
+   - If "tide.png" exists, try "tide_1.png"
+   - If "tide_1.png" exists, try "tide_2.png"
+   - Continue incrementing until you find a name that does NOT exist
+4. You can also use: ls "${dir}/<base_name>*.png" 2>/dev/null to see all similar files
+5. Only after confirming the target does NOT exist, run: mv "${input_file}" "<final_target_path>"
+
+EXAMPLE WORKFLOW:
+  # Check if tide.png exists
+  test -e "${dir}/tide.png" && echo "exists" || echo "available"
+  # If exists, check tide_1.png
+  test -e "${dir}/tide_1.png" && echo "exists" || echo "available"
+  # Once you find an available name, rename
+  mv "${input_file}" "${dir}/tide_1.png"
+
+After renaming, echo ONLY the new filename (not the full path).
+
+CRITICAL: Do NOT assume a filename is available. You MUST verify with test -e before each mv command.
 EOF
 }
 
@@ -139,7 +159,7 @@ rename_with_claude() {
     ocr_content=$(cat "${ocr_file}")
     prompt=$(build_rename_prompt "${input_file}" "${ocr_content}")
 
-    claude --model opus --allowedTools "Bash(mv:*)" -p "${prompt}"
+    claude --model opus --allowedTools "Bash(mv:*)" "Bash(ls:*)" "Bash(test:*)" -p "${prompt}"
 
     rm -f "${ocr_file}"
 }
