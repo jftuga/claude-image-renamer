@@ -1,3 +1,8 @@
+// ocr.swift
+//
+// A command-line utility that performs optical character recognition (OCR) on an image file.
+// Uses Apple's Vision framework to extract text with high accuracy and language correction.
+
 import Foundation
 import Vision
 
@@ -16,7 +21,6 @@ func extractText(from imagePath: String) throws -> String {
     return text
 }
 
-// Example CLI usage
 if CommandLine.arguments.count > 1 {
     let path = CommandLine.arguments[1]
     let text = try extractText(from: path)
