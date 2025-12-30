@@ -23,6 +23,12 @@ func extractText(from imagePath: String) throws -> String {
 
 if CommandLine.arguments.count > 1 {
     let path = CommandLine.arguments[1]
+
+    guard FileManager.default.fileExists(atPath: path) else {
+        fputs("Error: File not found at '\(path)'\n", stderr)
+        exit(1)
+    }
+
     let text = try extractText(from: path)
     print(text)
 } else {
