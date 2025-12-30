@@ -11,7 +11,7 @@ AI-powered image renaming script that generates descriptive filenames for screen
 
 ## Requirements
 
-- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) (`claude`)
+- [Claude Code CLI](https://code.claude.com/docs/en/overview) (`claude`)
 - `ocr` binary (optional, macOS only)
 
 ## Installation
