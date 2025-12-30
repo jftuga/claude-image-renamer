@@ -114,12 +114,14 @@ Rules:
 - Only lowercase letters, numbers, and underscores
 - Format: main_thing_sub_thing_detail
 - Preserve the original file extension
+- Do not overwrite or try to rename a file if the target file name already exists.
 
 OCR text from the image:
 ${ocr_content}
 
 Use mv to rename the file, then echo the new filename.
 IMPORTANT: YOU MUST ACTUALLY RENAME THE FILE WITH THE ALLOWED TOOLS.
+CRITICAL: If the target file name already exists, do not overwrite. Instead append a "_1", "_2", "_3", etc. at the end of the base file name.
 EOF
 }
 
