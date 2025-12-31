@@ -62,6 +62,14 @@ When processing multiple files, the script displays progress for each file and p
 When multiple files are provided, each file is processed sequentially through the above workflow.
 Files that fail validation (e.g., not found) are skipped, allowing the remaining files to be processed.
 
+## macOS Folder Actions
+
+For fully automated screenshot renaming, you can configure this tool as a macOS `Folder Action`.
+Once set up, any screenshot saved to your Desktop (or another watched folder) will be automatically
+renamed without manual intervention.
+
+See [folder_actions_setup/README.md](folder_actions_setup/README.md) for installation and configuration instructions.
+
 ## Acknowledgements
 
 A few ideas in this script were derived from [ai-screenshot-namer](https://github.com/cpbotha/ai-screenshot-namer)
