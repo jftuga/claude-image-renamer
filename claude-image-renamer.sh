@@ -4,13 +4,14 @@
 # Uses OCR text extraction combined with Claude's vision capabilities to analyze image
 # content and rename files to a searchable, lowercase, underscore-separated format.
 #
-# Usage: ./claude-image-renamer.sh <image_file>
+# Usage: ./claude-image-renamer.sh <image_file> [image_file...]
 #
 # Dependencies:
 #   - ocr: for text extraction from images
 #   - claude: Claude Code CLI for AI-powered analysis
 #
 # Workflow:
+#   For each image file provided:
 #   1. Sanitize macOS screenshot filenames containing narrow no-break space (U+202F)
 #   2. Generate OCR text extraction (or use existing .ocr.txt file)
 #   3. Send OCR content and image to Claude for analysis
@@ -31,13 +32,31 @@ readonly NARROW_NBSP=$'\xE2\x80\xAF'
 # Functions
 # ------------------------------------------------------------------------------
 
+show_usage() {
+    # Displays usage information and exits with an error code.
+
+    echo "Usage: $(basename "$0") <image_file> [image_file...]" >&2
+    echo "Rename one or more image files using AI-powered descriptive naming." >&2
+    exit 1
+}
+
 validate_input_file() {
+    # Validates that the input file exists.
+    #
+    # Args:
+    #   $1: file path to validate
+    #
+    # Returns:
+    #   0 if file exists, 1 otherwise
+
     local file_path="$1"
 
     if [[ ! -e "${file_path}" ]]; then
-        echo "File not found: ${file_path}" >&2
-        exit 1
+        echo "Error: File not found: ${file_path}" >&2
+        return 1
     fi
+
+    return 0
 }
 
 sanitize_macos_screenshot_name() {
@@ -159,9 +178,33 @@ rename_with_claude() {
     ocr_content=$(cat "${ocr_file}")
     prompt=$(build_rename_prompt "${input_file}" "${ocr_content}")
 
+    echo "Uploading image to claude, please wait for reply..."
     claude --model opus --allowedTools "Bash(mv:*)" "Bash(ls:*)" "Bash(test:*)" -p "${prompt}"
 
     rm -f "${ocr_file}"
+}
+
+process_single_file() {
+    # Processes a single image file through the renaming workflow.
+    #
+    # Args:
+    #   $1: input file path
+    #
+    # Returns:
+    #   0 on success, 1 on failure
+
+    local input_file="$1"
+    local ocr_file
+
+    if ! validate_input_file "${input_file}"; then
+        return 1
+    fi
+
+    input_file=$(sanitize_macos_screenshot_name "${input_file}")
+    ocr_file=$(get_or_create_ocr_file "${input_file}")
+    rename_with_claude "${input_file}" "${ocr_file}"
+
+    return 0
 }
 
 # ------------------------------------------------------------------------------
@@ -169,13 +212,37 @@ rename_with_claude() {
 # ------------------------------------------------------------------------------
 
 main() {
-    local input_file="$1"
-    local ocr_file
+    if [[ $# -eq 0 ]]; then
+        show_usage
+    fi
 
-    validate_input_file "${input_file}"
-    input_file=$(sanitize_macos_screenshot_name "${input_file}")
-    ocr_file=$(get_or_create_ocr_file "${input_file}")
-    rename_with_claude "${input_file}" "${ocr_file}"
+    local file
+    local success_count=0
+    local failure_count=0
+    local total_count=$#
+
+    for file in "$@"; do
+        echo "-----------------------------------------------------"
+        echo "Processing: ${file}"
+        echo "-----------------------------------------------------"
+
+        if process_single_file "${file}"; then
+            ((success_count++))
+        else
+            ((failure_count++))
+        fi
+
+        echo ""
+    done
+
+    if [[ ${total_count} -gt 1 ]]; then
+        echo "=========================================="
+        echo "Summary: ${success_count}/${total_count} files processed successfully"
+        if [[ ${failure_count} -gt 0 ]]; then
+            echo "         ${failure_count} file(s) failed"
+        fi
+        echo "=========================================="
+    fi
 }
 
-main "$1"
+main "$@"
