@@ -13,7 +13,7 @@ AI-powered image renaming script that generates descriptive filenames for screen
 
 ## AI Disclaimer
 
-The code in this repository was developed with the assistance of the Claude Opus 4.5 LLM model by Anthropic.
+The code in this repository was developed with the assistance of the Claude Sonnet LLM model by Anthropic.
 
 ## Requirements
 

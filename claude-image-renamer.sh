@@ -179,7 +179,7 @@ rename_with_claude() {
     prompt=$(build_rename_prompt "${input_file}" "${ocr_content}")
 
     echo "Uploading image to claude, please wait for reply..."
-    claude --model opus --allowedTools "Bash(mv:*)" "Bash(ls:*)" "Bash(test:*)" -p "${prompt}"
+    claude --model sonnet --allowedTools "Bash(mv:*)" "Bash(ls:*)" "Bash(test:*)" -p "${prompt}"
 
     rm -f "${ocr_file}"
 }
